@@ -1,13 +1,15 @@
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI
-#from langchain_anthropic import ChatAnthropic
+
+# from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain.agents import create_tool_calling_agent, AgentExecutor
 from tools import search_tool, wiki_tool, save_tool
 
 load_dotenv()
+
 
 class OutputResponse(BaseModel):
     topic: str
@@ -16,11 +18,13 @@ class OutputResponse(BaseModel):
     topic_summary: str
     tools_used: list[str]
 
-llm = ChatOpenAI(model="gpt-4",temperature=0)
+
+llm = ChatOpenAI(model="gpt-4", temperature=0)
 
 parser = PydanticOutputParser(pydantic_object=OutputResponse)
 
-prompt = ChatPromptTemplate.from_messages([
+prompt = ChatPromptTemplate.from_messages(
+    [
         (
             "system",
             """
@@ -32,7 +36,8 @@ prompt = ChatPromptTemplate.from_messages([
         ("placeholder", "{chat_history}"),
         ("human", "{user_quey}"),
         ("placeholder", "{agent_scratchpad}"),
-]).partial(format_instructions=parser.get_format_instructions())
+    ]
+).partial(format_instructions=parser.get_format_instructions())
 
 tools = [search_tool, wiki_tool, save_tool]
 
@@ -55,4 +60,3 @@ try:
     print(structured_response)
 except Exception as e:
     print("Error parsing response", e, "Raw Response - ", raw_response)
-
